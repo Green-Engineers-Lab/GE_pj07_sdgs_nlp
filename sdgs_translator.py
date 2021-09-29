@@ -57,12 +57,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 np.set_printoptions(precision=3)
 
 if os.name == 'nt':
-    abs_path = 'D:/Dropbox/pj07_sdgs_translator'
+    abs_path = 'YOUR_ROOT_PATH_win'
 elif os.name == 'posix':
-    abs_path = '/Users/mt/Dropbox/GE/pj07_sdgs_translator'
-    abs_path = '/home/ge/Dropbox/pj07_sdgs_translator'
+    abs_path = 'YOUR_ROOT_PATH_lnx_mac'
 
-
+    
 path_to_corpus = os.path.join(abs_path, 'corpus_zoo')
 current_time = '{0:%Y%m%d%H%M}'.format(datetime.now())
 path_to_result = os.path.join(abs_path, 'results', current_time)
