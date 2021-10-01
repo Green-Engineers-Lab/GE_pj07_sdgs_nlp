@@ -1,2 +1,2 @@
-# p07_sdgs_nlp
+# GE_pj07_sdgs_nlp
 
