@@ -46,7 +46,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-sys.path.append('../../')
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
@@ -54,17 +53,15 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # Set Path2Corpus =========================
-np.set_printoptions(precision=3)
-
 if os.name == 'nt':
     abs_path = 'YOUR_ROOT_PATH_win'
 elif os.name == 'posix':
     abs_path = 'YOUR_ROOT_PATH_lnx_mac'
 
     
-path_to_corpus = os.path.join(abs_path, 'corpus_zoo')
+path_to_corpus = 'PATH_TO_CORPUS'
 current_time = '{0:%Y%m%d%H%M}'.format(datetime.now())
-path_to_result = os.path.join(abs_path, 'results', current_time)
+path_to_result = 'PATH_TO_RESULT'
 
 if os.getcwd()=='results':
     os.makedirs(path_to_result)
@@ -127,7 +124,6 @@ def train_test_splitter(df, cvs, cv):
     test_idx = []
     for n in list(np.array_split(list(range(0,10)), cvs))[cv]:
         test_idx.extend(list(df.index[n::10]))
-#    test_idx = list(df.index[cv::cvs])
     train_idx = set(df.index)-set(test_idx)
     test_df = df.loc[test_idx]
     train_df =df.loc[train_idx]
@@ -185,7 +181,7 @@ def DataIteratorGenerator(train_pd, test_pd, max_length, batch_size):
     return dl_train, dl_test
 
 
-def wordnet_augmenter(sentence, mutation_ratio, erase_ratio):
+def wordnet_augmentor(sentence, mutation_ratio, erase_ratio):
     # Mutation ==============================================
     m = MeCab.Tagger('-Owakati')
     sentence = m.parse(sentence).split(' ')
@@ -223,7 +219,7 @@ def train_df_augmentation(train_df, augmentation_times):
     augmented_train_df = train_df
     for time in range(augmentation_times):
         for idx, row in tqdm(train_df.iterrows(), total=train_df.shape[0]):
-            augmented_text = wordnet_augmenter(row['text'], mutation_ratio=0.1, erase_ratio=0.1)
+            augmented_text = wordnet_augmentor(row['text'], mutation_ratio=0.1, erase_ratio=0.1)
             augmented_train_df = augmented_train_df.append({'text':augmented_text,'label':row['label']}, ignore_index=True)
     return augmented_train_df
 
@@ -380,7 +376,7 @@ def test_eval(net, dl):
     return np.mean(losses), accuracy, f1_score_micro, f1_score_macro, targets_list, texts_list, preds_prob, preds_onehot
 
 
-def unknown_predictor(net, dl, last_attention_layer):
+def unknown_predictor(net, dl, last_attention_layer, threshold=0.5):
     texts_list, preds_prob, outputs_list, doc_vecs_list, attentions_list = [], [], [], [], []
     net.eval()
     net.to(device)
@@ -412,7 +408,7 @@ def unknown_predictor(net, dl, last_attention_layer):
                     attentions_batch.append(attention_sum.cpu().detach().numpy())
                     del attention_sum
                 attentions_list.extend(attentions_batch)
-    preds_onehot = np.array(preds_prob) >= 0.5
+    preds_onehot = np.array(preds_prob) >= threshold
     preds_onehot = preds_onehot.astype(np.int).tolist()
     return preds_prob, preds_onehot, outputs_list, doc_vecs_list, attentions_list
 
@@ -430,7 +426,7 @@ def min_max(l):
     return [(i - l_min) / (l_max - l_min) for i in l]
 
 
-def mk_html(net, df, batch_size, max_length, atten_viz_path):
+def attention_visualizer(net, df, batch_size, max_length, atten_viz_path):
     outputs_iter, doc_vecs_iter, attentions_iter, preds_prob_iter = [], [], [], []
     df_iter = int(np.ceil(df.shape[0]/1000))
     if os.path.exists(atten_viz_path)==True:
@@ -596,7 +592,7 @@ for outer_cv in range(outer_cvs):
     texts_list.extend(texts)
     preds_prob_list.extend(preds_prob)
     preds_onehot_list.extend(preds_onehot)
-    _, _, _, _ = mk_html(outer_net, test_df, batch_size, max_length, 'val_attentions')
+    _, _, _, _ = attention_visualizer(outer_net, test_df, batch_size, max_length, 'val_attentions')
     with open('cv_results.txt','a', encoding='utf-8') as res:
         res.write(','.join([str(train_loss), str(test_loss), str(train_accuracy), str(test_accuracy), str(train_f1_score_micro), str(test_f1_score_micro), str(train_f1_score_macro), str(test_f1_score_macro)]) + '\n')
 
@@ -668,7 +664,7 @@ else:
 
 
 # Train attention visualization --------------------------------
-o,d1,a,preds_prob = mk_html(best_net, df, batch_size, max_length, 'train_attentions')
+o,d1,a,preds_prob = attention_vizualizer(best_net, df, batch_size, max_length, 'train_attentions')
 
 
 # Unknown text predictor =====================================
@@ -679,7 +675,7 @@ unknown_text3 = 'eggseggseggseggseggseggseggseggseggseggseggseggseggseggseggsegg
 
 unknown_texts = [unknown_text1, unknown_text2, unknown_text3]
 unknown_df = pd.DataFrame({'text': unknown_texts, 'label': [[0]*class_number for i in range(len(unknown_texts))]})
-o,d2,a, preds_prob = mk_html(best_net, unknown_df, batch_size, max_length, 'unknown_attentions')
+o,d2,a, preds_prob = attention_visualizer(best_net, unknown_df, batch_size, max_length, 'unknown_attentions')
 
 
 # Nexus visualizer ---------------------------------------------------
@@ -734,9 +730,9 @@ seeds_labels, needs_labels = list of multihot vectors [vector1, vector2, vector3
 vector* = [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1]
 '''
 
-# シーズをデータフレーム化、ベクトル取得
+# dataframe, vectrizing ---------------------
 seeds_df = pd.DataFrame({'text': seeds_texts, 'label': seeds_labels})
-_, seed_vecs, _, seed_probs = mk_html(best_net, seeds_df, batch_size, max_length, 'seeds_attentions')
+_, seed_vecs, _, seed_probs = attention_visualizer(best_net, seeds_df, batch_size, max_length, 'seeds_attentions')
 needs_df = pd.DataFrame({'text': needs_texts, 'label': needs_labels})
 _, need_vecs, _, need_probs  = mk_html(best_net, needs_df, batch_size, max_length, 'needs_attentions')
 
