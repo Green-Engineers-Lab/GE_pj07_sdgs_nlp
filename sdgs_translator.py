@@ -9,6 +9,7 @@ import numpy as np
 import os
 import re
 import string
+import itertools
 import pandas as pd
 import pickle
 import gc
