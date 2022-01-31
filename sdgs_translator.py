@@ -1,31 +1,24 @@
 # coding: utf-8
 
+# Utils =========================================
 import sys
-import shutil
 import random
 import math
 import numpy as np
 import os
-import platform
 import re
 import string
 import pandas as pd
 import pickle
-import optuna
 import gc
 import time
-import multiprocessing
-from langdetect import detect
 from datetime import datetime
 from os import listdir, path
 from tqdm import tqdm
-from googletrans import Translator
-# For Bert =========================================
+# For BERT =========================================
 import MeCab
-from nltk.corpus import wordnet
 import nltk
-nltk.download('wordnet')
-nltk.download('omw')
+from nltk.corpus import wordnet
 import torch
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
 from torch import nn
@@ -34,18 +27,18 @@ import transformers
 from transformers import BertTokenizer, BertModel, BertConfig, BertForPreTraining
 from transformers.modeling_bert import BertModel
 from transformers.tokenization_bert_japanese import BertJapaneseTokenizer
+import optuna
 from IPython.display import display, HTML
-import webbrowser
 # For Machine learning =========================================
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
-# Network analysis
+# Network analysis =========================================
 from networkx.algorithms import community
 import networkx as nx
 import matplotlib.pyplot as plt
 
-
+# Initializing calc_ENV =========================================
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
@@ -62,13 +55,11 @@ elif os.name == 'posix':
 path_to_corpus = 'PATH_TO_CORPUS'
 current_time = '{0:%Y%m%d%H%M}'.format(datetime.now())
 path_to_result = 'PATH_TO_RESULT'
-
-if os.getcwd()=='results':
-    os.makedirs(path_to_result)
-    os.chdir(path_to_result)
-    os.makedirs('train_attentions')
-    os.makedirs('val_attentions')
-    os.makedirs('test_attentions')
+os.makedirs(path_to_result)
+os.chdir(path_to_result)
+os.makedirs('train_attentions')
+os.makedirs('val_attentions')
+os.makedirs('test_attentions')
 
 
 # Set variables ==============================
@@ -93,14 +84,19 @@ goal_contents = np.array([
       'GOAL 16: Peace and Justice Strong Institutions',
       'GOAL 17: Partnerships to achieve the Goal'])
 
+# SDGs color code under 'SUSTAINABLE DEVELOPMENT GOALS GUIDELINES FOR THE USE OF THE SDG LOGO INCLUDING THE COLOUR WHEEL, AND 17 ICONS.'
+sdgs_colors = ['#E5243B','#DDA63A','#4C9F38','#C5192D','#FF3A21','#26BDE2','#FCC30B','#A21942',
+               '#FD6925','#DD1367','#FD9D24','#BF8B2E','#3F7E44','#0A97D9','#56C02B','#00689D',
+               '#19486A']
 
-sdgs_colors = ['#D60036','#D5A428','#5EA342','#B90029','#E0291D','#55C0E9','#F4C200','#970043','#E46018','#D10081','#ED9800','#B88A1B','#4E8145','#4497D6','#6DBD40','#306AA0','#264B6C']
+
 dic_id2cat = dict(zip(list(range(class_number)), goal_contents))
 dic_cat2id = dict(zip(goal_names, list(range(class_number))))
 dic_cat2id_full = dict(zip(goal_contents, list(range(class_number))))
 
 
-
+# Functions ==========================================================
+# IO ==============================
 def save_params(param_names, params_memory, name):
     col_names = np.array(param_names).reshape(1,-1)
     params = pd.DataFrame(params_memory, columns = col_names[0])
@@ -224,7 +220,7 @@ def train_df_augmentation(train_df, augmentation_times):
     return augmented_train_df
 
 
-# Bert ===============================================
+# BERT ===============================================
 class BertForSDGs(nn.Module):
     def __init__(self):
         super(BertForSDGs, self).__init__()
@@ -240,6 +236,10 @@ class BertForSDGs(nn.Module):
 
 
 def net_initializer(net):
+    '''
+    '[-1]' in 'for param in net.bert.encoder.layer[-1].parameters()' means we finetune only the last attention layer. 
+    if you finetube all layers, change it.
+    '''
     for param in net.parameters():
         param.requires_grad = False
     for param in net.bert.encoder.layer[-1].parameters():
@@ -250,7 +250,6 @@ def net_initializer(net):
 
 
 def bert_train(net, dataloaders_dict, criterion, optimizer, num_epochs, batch_size):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net.to(device)
     torch.backends.cudnn.benchmark = True
     batch_size = batch_size
@@ -286,7 +285,6 @@ def bert_train(net, dataloaders_dict, criterion, optimizer, num_epochs, batch_si
 
 
 def bert_best_train(net, dataloaders, criterion, optimizer, num_epochs, batch_size, early_stopping_rate):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net.to(device)
     torch.backends.cudnn.benchmark = True
     batch_size = batch_size
@@ -321,6 +319,9 @@ def bert_best_train(net, dataloaders, criterion, optimizer, num_epochs, batch_si
 
 
 def opt_bert(trial):
+    '''
+    You can change the range for bayesian optimization.
+    '''
     max_length = trial.suggest_int('max_length', 9, 9)
     batch_size = trial.suggest_int('batch_size', 3, 6)
     encoder_lr = trial.suggest_loguniform('encoder_lr', 1e-5, 1e-2)
@@ -415,6 +416,9 @@ def unknown_predictor(net, dl, last_attention_layer, threshold=0.5):
 
 # Attention visualization ============================
 def highlight(word, attn):
+    '''
+    You can change the color of the attentions here.
+    '''
     attn = attn*0.8
     html_color = '#%02X%02X%02X' % (255, int(255*(1 - attn)), int(255*(1 - attn)))
     return '<span style="background-color: {}">{}</span>'.format(html_color, word)
@@ -476,7 +480,6 @@ def attention_visualizer(net, df, batch_size, max_length, atten_viz_path):
                     if tokenizer.convert_ids_to_tokens([word.tolist()])[0] == "[SEP]":
                         html += "<br>"
                         break
-        #ENG                html += highlight(tokenizer.convert_ids_to_tokens([word.numpy().tolist()])[0], attn) + ' '
                     html += highlight(tokenizer.convert_ids_to_tokens([word.numpy().tolist()])[0], attn)
                 file_num = sum(os.path.isfile(os.path.join(atten_viz_path, name)) for name in os.listdir(atten_viz_path))
                 with open(atten_viz_path + '/attention_viz' + str(file_num) + '.html', 'w', encoding='UTF-8') as res:
@@ -485,16 +488,8 @@ def attention_visualizer(net, df, batch_size, max_length, atten_viz_path):
 
 
 
-# --------------------------------------------------
-def get_similarity_ranking(input_vec, target_vec_list, rank=10):
-    cos = nn.CosineSimilarity(dim=1, eps=1e-6)
-    cossim_list = []
-    for target_vec in target_vec_list:
-        output = cos(input_vec, target_vec)
-        cossim_list.append(output)
 
-
-
+# Training session ==================================================================================
 # tokenizer settings -----------------------------------------
 '''
 In our article case, 
@@ -505,28 +500,31 @@ tokenizer = BertJapaneseTokenizer.from_pretrained(tokenizer_name)
 model = BertModel.from_pretrained(model_name)
 criterion = torch.nn.BCEWithLogitsLoss()
 nltk.download('wordnet')
+nltk.download('omw')
 
 
 # ==============================================================
 # main =========================================================
 # Data loader ---------------------------------------------------------
 '''
-texts = list of texts ['text1', 'text2', 'text3', ....]
+texts = list of texts such as ['text1', 'text2', 'text3', ....]
 text* = 'foobarfoobarfoobarfoobarfoobar.'
 
-labels = list of multihot vectors [vector1, vector2, vector3, ....] 
+labels = list of multihot vectors such as [vector1, vector2, vector3, ....] 
 vector* = [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1]
 '''
 # Generate Data frame ---------------------------------------------------------
 # Extend Data frame ---------------------------------------------------------
+window_size = 2**9
 extended_texts = []
 extended_labels = []
 for label, text in zip(labels, texts):
-    div = int(np.ceil(len(text)/512))
+    div = int(np.ceil(len(text)/window_size))
     for i in range(div):
-        extended_texts.append(text[0+i*512:(i+1)*512])
+        extended_texts.append(text[0+i*window_size:(i+1)*window_size])
         extended_labels.append(label)
 
+        
 # Generate Data frame ---------------------------------------------------------
 df = pd.DataFrame({'text' : extended_texts, 'label' : extended_labels})
 df = df.sample(frac=1)
@@ -646,14 +644,14 @@ best_net = bert_best_train(best_net,
               early_stopping_rate=0.1)
 
 
-# Best model reader and loader ==============================================
 if os.getcwd()=='results':
     model_path = 'best_model_gpu.pth'
     torch.save(best_net.state_dict(), model_path)
     model_path = 'best_model_cpu.pth'
     torch.save(best_net.to('cpu').state_dict(), model_path)
-
-
+    
+    
+# Loading Best model ==============================================
 best_net = BertForSDGs()
 if torch.cuda.is_available()==True:
     model_path = 'best_model_gpu.pth'
@@ -663,26 +661,24 @@ else:
     best_net.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 
 
-# Train attention visualization --------------------------------
-o,d1,a,preds_prob = attention_vizualizer(best_net, df, batch_size, max_length, 'train_attentions')
+# For the results of train dataset --------------------------------
+outputs, document_vectors, attentions, preds_probs = attention_vizualizer(best_net, df, batch_size, max_length, 'train_attentions')
 
 
-# Unknown text predictor =====================================
+# # For the results of test dataset --------------------------------
 unknown_text1 = 'spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam'
 unknown_text2 = 'hamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamhamham'
 unknown_text3 = 'eggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggseggs'
-
-
 unknown_texts = [unknown_text1, unknown_text2, unknown_text3]
 unknown_df = pd.DataFrame({'text': unknown_texts, 'label': [[0]*class_number for i in range(len(unknown_texts))]})
-o,d2,a, preds_prob = attention_visualizer(best_net, unknown_df, batch_size, max_length, 'unknown_attentions')
+outputs, document_vectors, attentions, preds_probs  = attention_visualizer(best_net, unknown_df, batch_size, max_length, 'unknown_attentions')
 
 
 # Nexus visualizer ---------------------------------------------------
 import itertools
 from sklearn.metrics import jaccard_score
-preds_onehot=np.array(preds_prob) >= 0.5
-data = pd.DataFrame(np.array(preds_onehot))
+preds_onehots=np.array(preds_probs) >= 0.5
+data = pd.DataFrame(np.array(preds_onehots))
 l = np.arange(0,17)
 C = list(itertools.combinations(l,2))
 jaccards = []
@@ -692,21 +688,11 @@ network = []
 for c in C:
     jaccard = (jaccard_score(data[c[0]], data[c[1]])-np.min(jaccards))/(np.max(jaccards)-np.min(jaccards))
     network.append((c[0], c[1], jaccard))
-
-
 # Build network ---------------------------------------
 G = nx.Graph()
 G.add_nodes_from(l, size=10)
 for i, j, w in network:
-    G.add_edge(i, j, weight=w)
-
-communities_generator = community.girvan_newman(G)
-top_level_communities = next(communities_generator)
-next_level_communities = next(communities_generator)
-sorted(map(sorted, next_level_communities))
-
-
-# nx.write_gml(G, "pagerank.gml")
+    G.add_edge(i, j, weight=w)    
 plt.figure(figsize=(10,20), dpi=100)
 pos = nx.spring_layout(G)
 pr = nx.pagerank(G)
@@ -721,22 +707,17 @@ plt.savefig('indicator_nexus.png')
 
 
 # Match making part --------------------------------------------
-################################
-# seeds
 '''
 seeds_texts, needs_texts = list of texts ['text1', 'text2', 'text3', ....]
 text* = 'foobarfoobarfoobarfoobarfoobar.'
 seeds_labels, needs_labels = list of multihot vectors [vector1, vector2, vector3, ....] 
 vector* = [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1]
 '''
-
 # dataframe, vectrizing ---------------------
 seeds_df = pd.DataFrame({'text': seeds_texts, 'label': seeds_labels})
 _, seed_vecs, _, seed_probs = attention_visualizer(best_net, seeds_df, batch_size, max_length, 'seeds_attentions')
 needs_df = pd.DataFrame({'text': needs_texts, 'label': needs_labels})
 _, need_vecs, _, need_probs  = mk_html(best_net, needs_df, batch_size, max_length, 'needs_attentions')
-
-
 # Cosine similarity ----------------------
 need_vec = need_vecs[1]
 cos = nn.CosineSimilarity(dim=0, eps=1e-6)
@@ -747,7 +728,6 @@ for i, seed_vec in enumerate(seed_vecs):
     res = [i, output.item()]
     cossims.append(res)
     for_freq.append(output.item())
-
 cossim_df = pd.DataFrame(cossims)
 df_sim_values = pd.concat([cossim_df, seeds_df['text']], axis=1)
 df_sim_values = df_sim_values.rename({0: "id", 1: "cossim"}, axis='columns')
@@ -757,12 +737,6 @@ df_sim_values.to_csv('df_sim_values.csv')
 
 
 # Clustering by t-SNE ==============================================
-import matplotlib.pyplot as plt
-from sklearn import datasets
-from sklearn.manifold import TSNE
-import seaborn as sns
-
-
 seed_vecs.extend(need_vecs)
 all_vecs = seed_vecs.copy()
 seed_vecs = seed_vecs[0:len(seeds_df)]
@@ -771,7 +745,6 @@ seed_vecs_reduced = all_vecs_reduced[0:-(len(need_vecs))]
 need_vecs_reduced = all_vecs_reduced[-(len(need_vecs)):]
 seed_goals = [np.argmax(seed_prob) for seed_prob in seed_probs]
 need_goals = [np.argmax(need_prob) for need_prob in need_probs]
-
 df_seeds = pd.DataFrame(np.c_[np.array(seed_goals).reshape(-1,1), seed_vecs_reduced])
 df_seeds.columns = ['goal','Primary Dimension','Secondary Dimension']
 df_needs = pd.DataFrame(np.c_[np.array(need_goals).reshape(-1,1), need_vecs_reduced])
