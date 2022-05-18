@@ -6,6 +6,8 @@ The model is for estimating Global Goals, vectorizing sematics and visualizing i
 The origina article is the below.
 'T. Matsui, K. Suzuki, K. Ando, Y. Kitai, C. Haga, N. Masuhara, S. Kawakubo: A Natural Language Processing Model for Supporting Sustainable Development Goals: Translating Semantics, Visualizing Nexus, and Connecting Stakeholders, Sustainability Science. 2021.12. DOI:10.1007/s11625-022-01093-3'.
 
+You can download the pre-trained model weight in English version <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>.
+
 Aknowledgement and Usuful reference for Japanese:
 1. Natural Languate Processing by BERT, https://www.ohmsha.co.jp/book/9784274227264/
 2. Natural language processing by Transformer, https://www.asakura.co.jp/detail.php?book_code=12265
