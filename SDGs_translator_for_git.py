@@ -34,7 +34,7 @@ current_time = '{0:%Y%m%d%H%M}'.format(datetime.now())
 # Set Path2Corpus =========================
 abs_path = 'YOUR_ROOT_PATH'
 #abs_path = r'D:/Dropbox/pj07_sdgs_translator'
-path_to_weight = 'YOUR_ROOT_MODEL_WEIGHT'
+path_to_weight = 'YOUR_MODEL_WEIGHT'
 #abs_path = r'D:/Dropbox/pj07_sdgs_translator/model_weight_gpu.pth'
 path_to_result = os.path.join(abs_path, 'results', current_time)
 os.makedirs(path_to_result)
@@ -257,10 +257,10 @@ if 'net' not in locals():
     if torch.cuda.is_available()==True:
         print('on gpu')
         model_path = 'model_gpu.pth'
-        net.load_state_dict(torch.load(model_path))
+        net.load_state_dict(torch.load(path_to_weight))
     else:
         model_path = 'model_cpu.pth'
-        net.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        net.load_state_dict(torch.load(path_to_weight, map_location=torch.device('cpu')))
     net.module.bert.config
     net.module.bert.eval()
 
