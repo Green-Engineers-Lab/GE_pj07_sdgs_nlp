@@ -4,7 +4,7 @@ This is a code for understanding SDGs (Sustainable Development Goals) using Natu
 The model is for estimating Global Goals, vectorizing sematics and visualizing interklinkages between SDGs related to the input texts.
 
 The origina article is the below.
-'T. Matsui, K. Suzuki, K. Ando, Y. Kitai, C. Haga, N. Masuhara, S. Kawakubo: A Natural Language Processing Model for Supporting Sustainable Development Goals: Translating Semantics, Visualizing Nexus, and Connecting Stakeholders, Sustainability Science. 2021.12. DOI:10.1007/s11625-022-01093-3'.
+'T. Matsui, K. Suzuki, K. Ando, Y. Kitai, C. Haga, N. Masuhara, S. Kawakubo: A Natural Language Processing Model for Supporting Sustainable Development Goals: Translating Semantics, Visualizing Nexus, and Connecting Stakeholders, Sustainability Science. 2021.12. <a href="https://link.springer.com/article/10.1007/s11625-022-01093-3">DOI:10.1007/s11625-022-01093-3'</a>.
 
 Aknowledgement and Usuful reference for Japanese:
 1. Natural Languate Processing by BERT, https://www.ohmsha.co.jp/book/9784274227264/
