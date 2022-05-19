@@ -1,9 +1,9 @@
 # GE_pj07_sdgs_nlp
 
-This is a code for understanding SDGs (Sustainable Development Goals) using Natural Language Processor.
+This is a code for understanding SDGs (Sustainable Development Goals) using a Natural Language Processor.
 The model is for estimating Global Goals, vectorizing sematics and visualizing interklinkages between SDGs related to the input texts.
 
-The origina article is the below.
+The original article is the below.
 'T. Matsui, K. Suzuki, K. Ando, Y. Kitai, C. Haga, N. Masuhara, S. Kawakubo: A Natural Language Processing Model for Supporting Sustainable Development Goals: Translating Semantics, Visualizing Nexus, and Connecting Stakeholders, Sustainability Science. 2021.12. <a href="https://link.springer.com/article/10.1007/s11625-022-01093-3">DOI:10.1007/s11625-022-01093-3'</a>.
 
 Aknowledgement and Usuful reference for Japanese:
@@ -13,4 +13,4 @@ Aknowledgement and Usuful reference for Japanese:
 4. Japanese pretrained BERT, https://github.com/cl-tohoku/bert-japanese
 
 # UPDATE
-18.05.2022: You can run the pre-trained model weight in English version with 'sdgs_translator_for_git.py'. You can download the weight from <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1
+18.05.2022: You can run the pre-trained model weight in ENG version with 'sdgs_translator_for_git.py'. You can download the weight from <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1
