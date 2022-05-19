@@ -19,11 +19,6 @@ from torch.utils.data import Dataset, DataLoader
 from torch import nn
 from transformers import BertTokenizer, BertModel
 from IPython.display import HTML
-# For Machine learning =========================================
-from sklearn import metrics
-from sklearn.manifold import TSNE
-# Network analysis =========================================
-from networkx.algorithms import community
 
 
 # Intializing envs ========================================
@@ -231,7 +226,6 @@ def mk_html(net, df, batch_size, max_length, atten_viz_path):
 # tokenizer settings -----------------------------------------
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertModel.from_pretrained('bert-base-uncased')
-criterion = torch.nn.BCEWithLogitsLoss()
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
