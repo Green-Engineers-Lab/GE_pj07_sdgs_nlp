@@ -264,7 +264,7 @@ unknown_texts = [
                 ]
 
 
-df = pd.DataFrame({'text': unknown_texts, 'label': [[0]*class_number for i in range(len(unknown_texts))]})
+df = pd.DataFrame({'text': unknown_texts, 'label': [['?']*class_number for i in range(len(unknown_texts))]})
 output, vecs, attentions, probs = mk_html(net, df, batch_size, max_length, 'test_attentions')
 
 
