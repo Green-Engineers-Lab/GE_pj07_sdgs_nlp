@@ -116,8 +116,6 @@ class BertForSDGs(nn.Module):
         super(BertForSDGs, self).__init__()
         self.bert = model
         self.cls = nn.Linear(in_features=self.bert.config.hidden_size, out_features=class_number)
-        # nn.init.normal_(self.cls.weight, std=0.02)
-        # nn.init.normal_(self.cls.bias, 0)
     def forward(self, ids, mask, token_type_ids):
         vec, vec_0, attentions = self.bert(ids,
                                         attention_mask = mask,
@@ -167,7 +165,6 @@ def predictor(net, dl, last_attention_layer):
 
 # Attention visualization ============================
 def highlight(word, attn):
-    attn = attn*0.8
     html_color = '#%02X%02X%02X' % (255, int(255*(1 - attn)), int(255*(1 - attn)))
     return '<span style="background-color: {}">{}</span>'.format(html_color, word)
 
