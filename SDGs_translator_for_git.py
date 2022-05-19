@@ -63,11 +63,6 @@ goal_contents = np.array(['GOAL 01: No Poverty',
       'GOAL 17: Partnerships to achieve the Goal'])
 
 
-dic_id2cat = dict(zip(list(range(class_number)), goal_contents))
-dic_cat2id = dict(zip(goal_names, list(range(class_number))))
-dic_cat2id_full = dict(zip(goal_contents, list(range(class_number))))
-
-
 # Data IO ------------------------------------------
 class CustomDataset(Dataset):
     def __init__(self, dataframe, tokenizer, max_length):
