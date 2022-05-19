@@ -13,4 +13,4 @@ Aknowledgement and Usuful reference for Japanese:
 4. Japanese pretrained BERT, https://github.com/cl-tohoku/bert-japanese
 
 # UPDATE
-18.05.2022: You can run the pre-trained model weight in ENG version with 'sdgs_translator_for_git.py'. You can download the weight from <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1
+18.05.2022: You can run the pre-trained model weight in ENG version with 'sdgs_translator_for_git.py'. You can download the model weight from <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1
