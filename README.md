@@ -14,7 +14,7 @@ Aknowledgement and Usuful reference for Japanese:
 
 # UPDATE
 ## 18.05.2022
-You can run the pre-trained model weight in ENG version with 'sdgs_translator_for_git.py'. You can download the model weight from <a href = "https://www.dropbox.com/s/wj7th9x8uqu01st/model_weight_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1. The accuracy of this version is still low, this is due to the low-divergence of the training dataset. Please enjoy the model just for the imagination.
+You can run the pre-trained model weight in ENG version with 'sdgs_translator_for_git.py'. You can download the model weight from <a href = "https://www.dropbox.com/s/owzc1u6khhpe6js/best_model_gpu.pth?dl=0">here</a>. Proofed on pytorch==1.8.2, transformers==4.16.1. The accuracy of this version is still low, this is due to the low-divergence of the training dataset. Please enjoy the model just for boosting your imagination.
 
 -----------------------------------------------------------------
   precision    recall  f1-score   support
